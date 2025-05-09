@@ -10,6 +10,10 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+@app.context_processor
+def inject_now():
+    return {'now': datetime.utcnow()}
+
 @app.route('/')
 def index():
     conn = get_db_connection()
