@@ -32,7 +32,7 @@
     ```
     If not, install Flask and other dependencies manually:
     ```bash
-    pip install Flask Werkzeug openai
+    pip install Flask Werkzeug openai markdown2
     ```
 
 4.  **Set up OpenAI API Key:**

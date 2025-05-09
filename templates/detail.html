@@ -12,9 +12,10 @@
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
             <i class="bi bi-trash"></i> Löschen
         </button>
-        <form action="{{ url_for('generate_ai_description', wein_id=wein.id) }}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-info ms-2">
-                <i class="bi bi-robot"></i> AI Beschreibung generieren
+        <form action="{{ url_for('generate_ai_description', wein_id=wein.id) }}" method="post" class="d-inline" id="aiForm">
+            <button type="submit" class="btn btn-info ms-2" id="aiButton">
+                <span id="aiButtonText"><i class="bi bi-robot"></i> AI Beschreibung generieren</span>
+                <span id="aiButtonSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
             </button>
         </form>
     </div>
@@ -113,8 +114,11 @@
                 AI Weinbeschreibung
             </div>
             <div class="card-body">
-                {# This will display raw markdown. For HTML rendering, a library like Markdown is needed. #}
-                <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ wein.ai_beschreibung }}</pre>
+                {% if ai_html_beschreibung %}
+                    {{ ai_html_beschreibung|safe }}
+                {% else %}
+                    <p class="text-muted">Noch keine AI-Beschreibung vorhanden. Klicken Sie auf "AI Beschreibung generieren".</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -141,5 +145,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const aiForm = document.getElementById('aiForm');
+    const aiButton = document.getElementById('aiButton');
+    const aiButtonText = document.getElementById('aiButtonText');
+    const aiButtonSpinner = document.getElementById('aiButtonSpinner');
+
+    if (aiForm) {
+        aiForm.addEventListener('submit', function () {
+            if (aiButton) {
+                aiButton.disabled = true;
+                aiButtonText.textContent = 'Generiere... ';
+                aiButtonSpinner.classList.remove('d-none');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
 

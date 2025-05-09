@@ -5,6 +5,7 @@ import os
 import base64
 from werkzeug.utils import secure_filename
 import openai # Import the OpenAI library
+import markdown2 # Import markdown2
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ihre_geheime_schluesselzeichenfolge'
@@ -47,7 +48,12 @@ def wein_detail(wein_id):
     if wein is None:
         flash('Wein nicht gefunden!', 'danger')
         return redirect(url_for('index'))
-    return render_template('detail.html', wein=wein)
+    
+    ai_html_beschreibung = None
+    if wein['ai_beschreibung']:
+        ai_html_beschreibung = markdown2.markdown(wein['ai_beschreibung'])
+        
+    return render_template('detail.html', wein=wein, ai_html_beschreibung=ai_html_beschreibung)
 
 @app.route('/wein/neu', methods=('GET', 'POST'))
 def wein_neu():
