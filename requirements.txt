@@ -1,4 +1,4 @@
 Flask
 Werkzeug
 openai==1.78.0
-markdown2==2.5.1
+markdown2==2.5.3
