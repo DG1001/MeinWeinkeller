@@ -276,6 +276,7 @@ def generate_ai_description(wein_id):
     final_prompt = f"""Basierend auf den folgenden Informationen und Bildanalysen, erstelle eine ansprechende und informative Markdown-Beschreibung für den Wein.
 Die Beschreibung sollte Details zum Wein, mögliche Verkostungsnotizen (basierend auf typischen Eigenschaften der Rebsorte/Region, falls nicht anders gegeben), und interessante Fakten enthalten.
 Strukturiere den Text gut mit Markdown (Überschriften, Listen, Fett-/Kursivschrift).
+WICHTIG: Füge keine Bilder oder Bild-Tags (z.B. `![alt text](url)`) in die Markdown-Beschreibung ein. Die Beschreibung soll rein textuell sein.
 
 Weindaten:
 {wine_data_text}
