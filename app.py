@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime
 import os
 import base64
@@ -12,6 +12,7 @@ app.config['SECRET_KEY'] = 'ihre_geheime_schluesselzeichenfolge'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
+app.config['APP_PASSWORD'] = os.environ.get('APP_PASSWORD') # Passwort für die App
 
 # Initialize OpenAI client
 if app.config['OPENAI_API_KEY']:
@@ -28,6 +29,32 @@ def get_db_connection():
     conn = sqlite3.connect('weinkeller.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password and app.config['APP_PASSWORD'] and password == app.config['APP_PASSWORD']:
+            session['logged_in'] = True
+            session.permanent = True # Session bleibt über Browser-Schließung hinaus bestehen (abhängig von app.permanent_session_lifetime)
+            flash('Erfolgreich angemeldet!', 'success')
+            next_url = request.args.get('next')
+            return redirect(next_url or url_for('index'))
+        else:
+            flash('Falsches Passwort.', 'danger')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('Erfolgreich abgemeldet.', 'info')
+    return redirect(url_for('login'))
+
+@app.before_request
+def require_login():
+    if not session.get('logged_in') and \
+       request.endpoint not in ['login', 'static']:
+        return redirect(url_for('login', next=request.url))
 
 @app.context_processor
 def inject_now():

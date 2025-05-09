@@ -44,13 +44,21 @@
     On Windows, use `set OPENAI_API_KEY=your_openai_api_key_here` in Command Prompt or `$env:OPENAI_API_KEY='your_openai_api_key_here'` in PowerShell.
     If the API key is not set, the AI features will be disabled.
 
-5.  **Initialize the database:**
+5.  **Set up Application Password:**
+    The application can be password-protected. Set the password as an environment variable:
+    ```bash
+    export APP_PASSWORD='your_chosen_password'
+    ```
+    On Windows, use `set APP_PASSWORD=your_chosen_password` in Command Prompt or `$env:APP_PASSWORD='your_chosen_password'` in PowerShell.
+    If this is not set, login will not be possible if you intend to use password protection.
+
+6.  **Initialize the database:**
     This will create the `weinkeller.db` SQLite database file and populate it with the schema and any initial sample data.
     ```bash
     python init_db.py
     ```
 
-6.  **Create the upload directory:**
+7.  **Create the upload directory:**
     The application saves uploaded images to `static/uploads/`.
     ```bash
     mkdir -p static/uploads
