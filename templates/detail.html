@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ wein.name }} ({{ wein.jahrgang }}){% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ wein.name }} <small class="text-muted">{{ wein.jahrgang }}</small></h1>
+    <div>
+        <a href="{{ url_for('wein_bearbeiten', wein_id=wein.id) }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Bearbeiten
+        </a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash"></i> Löschen
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                Weininformationen
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Weingut:</strong></div>
+                    <div class="col-md-8">{{ wein.weingut }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Rebsorte:</strong></div>
+                    <div class="col-md-8">{{ wein.rebsorte }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Region:</strong></div>
+                    <div class="col-md-8">{{ wein.region or 'Keine Angabe' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Jahrgang:</strong></div>
+                    <div class="col-md-8">{{ wein.jahrgang }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Trinktemperatur:</strong></div>
+                    <div class="col-md-8">{{ wein.trinktemperatur or 'Keine Angabe' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Preis:</strong></div>
+                    <div class="col-md-8">{% if wein.preis %}{{ "%.2f"|format(wein.preis) }} €{% else %}Keine Angabe{% endif %}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Kaufdatum:</strong></div>
+                    <div class="col-md-8">{{ wein.kaufdatum or 'Keine Angabe' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Bestand:</strong></div>
+                    <div class="col-md-8">{{ wein.bestand }} Flaschen</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                Lagerung
+            </div>
+            <div class="card-body">
+                <p><strong>Lagerposition:</strong><br>{{ wein.lagerposition or 'Keine Position angegeben' }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                Notizen
+            </div>
+            <div class="card-body">
+                {% if wein.notizen %}
+                <p>{{ wein.notizen }}</p>
+                {% else %}
+                <p class="text-muted">Keine Notizen vorhanden</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lösch-Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Wein löschen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Sind Sie sicher, dass Sie den Wein "{{ wein.name }} ({{ wein.jahrgang }})" löschen möchten?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <form action="{{ url_for('wein_loeschen', wein_id=wein.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Löschen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

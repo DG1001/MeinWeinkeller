@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Weinkeller Übersicht{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Mein Weinkeller</h1>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Weinübersicht</h5>
+                    <p class="card-text text-muted">{{ weine|length }} Weine in Ihrer Sammlung</p>
+                </div>
+                <a href="{{ url_for('wein_neu') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Neuen Wein hinzufügen
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for wein in weine %}
+    <div class="col">
+        <div class="card h-100 wine-card">
+            <div class="card-header d-flex justify-content-between align-items-center
+                         {% if wein.rebsorte == 'Cabernet Sauvignon' %}bg-danger text-white
+                         {% elif wein.rebsorte == 'Riesling' %}bg-info
+                         {% elif wein.rebsorte == 'Chardonnay' %}bg-warning
+                         {% else %}bg-success text-white{% endif %}">
+                <span>{{ wein.jahrgang }}</span>
+                <span class="badge bg-light text-dark">{{ wein.rebsorte }}</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ wein.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ wein.weingut }}</h6>
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="bi bi-geo-alt"></i> {{ wein.region or 'Keine Region angegeben' }}
+                    </small>
+                </p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="bi bi-thermometer-half"></i> {{ wein.trinktemperatur or 'Keine Trinktemperatur angegeben' }}
+                    </small>
+                </p>
+                {% if wein.preis %}
+                <p class="card-text">
+                    <strong>{{ "%.2f"|format(wein.preis) }} €</strong>
+                </p>
+                {% endif %}
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <small class="text-muted">Bestand: {{ wein.bestand }}</small>
+                <a href="{{ url_for('wein_detail', wein_id=wein.id) }}" class="btn btn-sm btn-outline-secondary">
+                    Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            Noch keine Weine vorhanden. <a href="{{ url_for('wein_neu') }}">Fügen Sie Ihren ersten Wein hinzu!</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

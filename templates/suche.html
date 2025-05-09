@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Weinsuche{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Weinsuche</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('suche') }}" method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="q" class="form-label">Suchbegriff</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ suchbegriff }}">
+            </div>
+            
+            <div class="col-md-6">
+                <label for="rebsorte" class="form-label">Rebsorte</label>
+                <select class="form-select" id="rebsorte" name="rebsorte">
+                    <option value="">Alle Rebsorten</option>
+                    {% for rebsorte in rebsorten %}
+                    <option value="{{ rebsorte.rebsorte }}" {% if rebsorte.rebsorte == ausgewaehlte_rebsorte %}selected{% endif %}>
+                        {{ rebsorte.rebsorte }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="weingut" class="form-label">Weingut</label>
+                <select class="form-select" id="weingut" name="weingut">
+                    <option value="">Alle Weingüter</option>
+                    {% for weingut in weingueter %}
+                    <option value="{{ weingut.weingut }}" {% if weingut.weingut == ausgewaehltes_weingut %}selected{% endif %}>
+                        {{ weingut.weingut }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="jahrgang" class="form-label">Jahrgang</label>
+                <select class="form-select" id="jahrgang" name="jahrgang">
+                    <option value="">Alle Jahrgänge</option>
+                    {% for jahrgang in jahrgaenge %}
+                    <option value="{{ jahrgang.jahrgang }}" {% if jahrgang.jahrgang|string == ausgewaehlter_jahrgang %}selected{% endif %}>
+                        {{ jahrgang.jahrgang }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Suchen</button>
+                <a href="{{ url_for('suche') }}" class="btn btn-outline-secondary">Zurücksetzen</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<h2>Suchergebnisse</h2>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for wein in weine %}
+    <div class="col">
+        <div class="card h-100 wine-card">
+            <div class="card-header d-flex justify-content-between align-items-center
+                         {% if wein.rebsorte == 'Cabernet Sauvignon' %}bg-danger text-white
+                         {% elif wein.rebsorte == 'Riesling' %}bg-info
+                         {% elif wein.rebsorte == 'Chardonnay' %}bg-warning
+                         {% else %}bg-success text-white{% endif %}">
+                <span>{{ wein.jahrgang }}</span>
+                <span class="badge bg-light text-dark">{{ wein.rebsorte }}</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ wein.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ wein.weingut }}</h6>
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="bi bi-geo-alt"></i> {{ wein.region or 'Keine Region angegeben' }}
+                    </small>
+                </p>
+                {% if wein.preis %}
+                <p class="card-text">
+                    <strong>{{ "%.2f"|format(wein.preis) }} €</strong>
+                </p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('wein_detail', wein_id=wein.id) }}" class="btn btn-sm btn-outline-secondary">
+                    Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            Keine Weine gefunden, die Ihren Suchkriterien entsprechen.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

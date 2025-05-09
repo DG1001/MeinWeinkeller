@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titel }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ titel }}</h1>
+
+<form method="post">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">Grundinformationen</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ wein.name }}" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="jahrgang" class="form-label">Jahrgang *</label>
+                            <input type="number" class="form-control" id="jahrgang" name="jahrgang" value="{{ wein.jahrgang }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="rebsorte" class="form-label">Rebsorte *</label>
+                            <input type="text" class="form-control" id="rebsorte" name="rebsorte" value="{{ wein.rebsorte }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="weingut" class="form-label">Weingut *</label>
+                        <input type="text" class="form-control" id="weingut" name="weingut" value="{{ wein.weingut }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="region" class="form-label">Region</label>
+                        <input type="text" class="form-control" id="region" name="region" value="{{ wein.region }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Zusätzliche Informationen</div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="trinktemperatur" class="form-label">Trinktemperatur</label>
+                            <input type="text" class="form-control" id="trinktemperatur" name="trinktemperatur" value="{{ wein.trinktemperatur }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lagerposition" class="form-label">Lagerposition</label>
+                            <input type="text" class="form-control" id="lagerposition" name="lagerposition" value="{{ wein.lagerposition }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="kaufdatum" class="form-label">Kaufdatum</label>
+                            <input type="date" class="form-control" id="kaufdatum" name="kaufdatum" value="{{ wein.kaufdatum }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preis" class="form-label">Preis (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="preis" name="preis" value="{{ wein.preis }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bestand" class="form-label">Bestand</label>
+                        <input type="number" class="form-control" id="bestand" name="bestand" value="{{ wein.bestand or 1 }}" min="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notizen" class="form-label">Notizen</label>
+                        <textarea class="form-control" id="notizen" name="notizen" rows="4">{{ wein.notizen }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card position-sticky" style="top: 1rem;">
+                <div class="card-header">Aktionen</div>
+                <div class="card-body">
+                    <p class="card-text">Felder mit * sind Pflichtfelder.</p>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Abbrechen</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
