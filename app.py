@@ -111,32 +111,54 @@ def wein_bearbeiten(wein_id):
         notizen = request.form.get('notizen', '')
         bestand = request.form.get('bestand', 1)
 
-        # Start with existing image paths
-        current_bild_pfade_list = []
-        if wein['bild_pfade']:
-            current_bild_pfade_list = [p for p in wein['bild_pfade'].split(',') if p] # Filter out empty strings from split
+        bilder_zu_loeschen = request.form.getlist('delete_bild') # Liste der zu löschenden Bilddateinamen
 
+        # Beginne mit den aktuellen Bildern aus der Datenbank
+        aktuelle_bilder_im_db = [p for p in (wein['bild_pfade'] or '').split(',') if p]
+        
+        verbleibende_bilder = []
+        for bild_pfad in aktuelle_bilder_im_db:
+            if bild_pfad in bilder_zu_loeschen:
+                # Bild ist zum Löschen markiert
+                try:
+                    file_path_to_delete = os.path.join(app.config['UPLOAD_FOLDER'], bild_pfad)
+                    if os.path.exists(file_path_to_delete):
+                        os.remove(file_path_to_delete)
+                        # flash(f'Bild "{bild_pfad}" erfolgreich vom Server gelöscht.', 'info') # Optional, kann bei vielen Bildern störend sein
+                    # else:
+                        # flash(f'Zu löschende Bilddatei "{bild_pfad}" nicht auf dem Server gefunden.', 'warning')
+                except OSError as e:
+                    flash(f'Fehler beim Löschen der Datei "{bild_pfad}" vom Server: {e}', 'danger')
+                # Füge es nicht zur Liste der verbleibenden Bilder hinzu
+            else:
+                # Behalte dieses Bild
+                verbleibende_bilder.append(bild_pfad)
+        
+        # Verarbeite neu hochgeladene Dateien
         uploaded_files = request.files.getlist("bilder")
         newly_uploaded_filenames = []
 
-        if uploaded_files and any(f.filename for f in uploaded_files): # Check if any new file has a filename
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Ensure upload folder exists
+        if uploaded_files and any(f.filename for f in uploaded_files): # Prüfen, ob neue Dateien hochgeladen wurden
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Sicherstellen, dass der Upload-Ordner existiert
             for file in uploaded_files:
                 if file and file.filename != '' and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
+                    # Speichere die Datei
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    if filename not in newly_uploaded_filenames: # Add to new list only if not already processed in this batch
+                    if filename not in newly_uploaded_filenames: # Nur einmal pro Upload-Vorgang hinzufügen
                         newly_uploaded_filenames.append(filename)
                 elif file and file.filename != '' and not allowed_file(file.filename):
                     flash(f'Ungültiger Dateityp für Datei: {file.filename}. Erlaubt sind: {", ".join(app.config["ALLOWED_EXTENSIONS"])}', 'warning')
         
-        # Combine existing and newly uploaded, ensuring new ones are only added if not already present in the combined list
-        final_bild_pfade_list = list(current_bild_pfade_list) # Make a copy
+        # Kombiniere verbleibende Bilder mit neu hochgeladenen
+        # Füge neue Dateien hinzu, wenn sie nicht bereits in der Liste der verbleibenden Bilder sind
+        final_bild_pfade_list = list(verbleibende_bilder) # Starte mit Bildern, die nicht gelöscht wurden
         for fn in newly_uploaded_filenames:
-            if fn not in final_bild_pfade_list: # Add new file if it's not in the current list of all images
+            if fn not in final_bild_pfade_list:
                  final_bild_pfade_list.append(fn)
         
-        bild_pfade_str = ",".join(final_bild_pfade_list)
+        # Erstelle den String für die Datenbank, filtere leere Einträge heraus
+        bild_pfade_str = ",".join(fn for fn in final_bild_pfade_list if fn)
         
         if not name or not jahrgang or not weingut or not rebsorte:
             flash('Name, Jahrgang, Weingut und Rebsorte sind erforderlich!', 'danger')
