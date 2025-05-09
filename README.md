@@ -1,5 +1,7 @@
 # Mein Weinkeller - Wine Cellar Management App
 
+![Mein Weinkeller Screenshot](screen.png)
+
 "Mein Weinkeller" is a web application built with Flask to help you manage your personal wine collection. You can add new wines, edit existing entries, search your collection, and upload images for your wines.
 
 ## Features
