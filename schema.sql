@@ -15,6 +15,7 @@ CREATE TABLE weine (
     notizen TEXT,
     bestand INTEGER DEFAULT 1,
     bild_pfade TEXT, -- Comma-separated list of image filenames
+    ai_beschreibung TEXT, -- AI-generated markdown description
     erstellt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     aktualisiert TIMESTAMP
 );

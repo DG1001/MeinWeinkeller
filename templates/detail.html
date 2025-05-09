@@ -12,6 +12,11 @@
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
             <i class="bi bi-trash"></i> Löschen
         </button>
+        <form action="{{ url_for('generate_ai_description', wein_id=wein.id) }}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-info ms-2">
+                <i class="bi bi-robot"></i> AI Beschreibung generieren
+            </button>
+        </form>
     </div>
 </div>
 
@@ -99,6 +104,22 @@
         </div>
     </div>
 </div>
+
+{% if wein.ai_beschreibung %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                AI Weinbeschreibung
+            </div>
+            <div class="card-body">
+                {# This will display raw markdown. For HTML rendering, a library like Markdown is needed. #}
+                <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ wein.ai_beschreibung }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Lösch-Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

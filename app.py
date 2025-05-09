@@ -2,12 +2,22 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import os
+import base64
 from werkzeug.utils import secure_filename
+import openai # Import the OpenAI library
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ihre_geheime_schluesselzeichenfolge'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
+
+# Initialize OpenAI client
+if app.config['OPENAI_API_KEY']:
+    client = openai.OpenAI(api_key=app.config['OPENAI_API_KEY'])
+else:
+    client = None
+    print("WARNUNG: OPENAI_API_KEY nicht gesetzt. AI-Funktionen sind deaktiviert.")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -194,6 +204,99 @@ def wein_loeschen(wein_id):
     
     conn.close()
     return redirect(url_for('index'))
+
+def get_image_base64(image_path):
+    try:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        print(f"Error encoding image {image_path}: {e}")
+        return None
+
+@app.route('/wein/<int:wein_id>/generate_ai_description', methods=('POST',))
+def generate_ai_description(wein_id):
+    if not client:
+        flash('OpenAI API Key nicht konfiguriert. AI-Funktion ist deaktiviert.', 'danger')
+        return redirect(url_for('wein_detail', wein_id=wein_id))
+
+    conn = get_db_connection()
+    wein = conn.execute('SELECT * FROM weine WHERE id = ?', (wein_id,)).fetchone()
+    
+    if wein is None:
+        flash('Wein nicht gefunden!', 'danger')
+        conn.close()
+        return redirect(url_for('index'))
+
+    image_analysis_results = []
+    if wein['bild_pfade']:
+        image_paths = [p for p in wein['bild_pfade'].split(',') if p]
+        for img_filename in image_paths:
+            full_image_path = os.path.join(app.config['UPLOAD_FOLDER'], img_filename)
+            if os.path.exists(full_image_path):
+                base64_image = get_image_base64(full_image_path)
+                if base64_image:
+                    try:
+                        response = client.chat.completions.create(
+                            model="gpt-4o", # Use gpt-4o for vision
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": "Beschreibe das Weinetikett und die Flasche auf diesem Bild. Konzentriere dich auf sichtbare Informationen wie Name, Jahrgang, Weingut, Rebsorte, Herkunft, Alkoholgehalt und besondere Merkmale des Etiketts."},
+                                        {
+                                            "type": "image_url",
+                                            "image_url": {
+                                                "url": f"data:image/jpeg;base64,{base64_image}"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            max_tokens=300
+                        )
+                        image_analysis_results.append(response.choices[0].message.content)
+                    except Exception as e:
+                        flash(f'Fehler bei der Analyse von Bild {img_filename} mit OpenAI: {e}', 'danger')
+            else:
+                flash(f'Bilddatei {img_filename} nicht gefunden.', 'warning')
+    
+    # Prepare data for text generation
+    wine_data_text = f"Name: {wein['name']}\nJahrgang: {wein['jahrgang']}\nWeingut: {wein['weingut']}\nRebsorte: {wein['rebsorte']}\nRegion: {wein['region'] or 'N/A'}\nPreis: {wein['preis'] or 'N/A'}\nNotizen: {wein['notizen'] or 'N/A'}"
+    
+    image_summary = "Keine Bilder analysiert."
+    if image_analysis_results:
+        image_summary = "\n\nAnalyse der Bilder:\n" + "\n---\n".join(image_analysis_results)
+
+    final_prompt = f"""Basierend auf den folgenden Informationen und Bildanalysen, erstelle eine ansprechende und informative Markdown-Beschreibung für den Wein.
+Die Beschreibung sollte Details zum Wein, mögliche Verkostungsnotizen (basierend auf typischen Eigenschaften der Rebsorte/Region, falls nicht anders gegeben), und interessante Fakten enthalten.
+Strukturiere den Text gut mit Markdown (Überschriften, Listen, Fett-/Kursivschrift).
+
+Weindaten:
+{wine_data_text}
+
+{image_summary}
+
+Erstelle nun die Markdown-Beschreibung:
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini", # Use gpt-4o-mini for text generation
+            messages=[
+                {"role": "system", "content": "Du bist ein Weinexperte und Sommelier, der detaillierte und ansprechende Weinbeschreibungen im Markdown-Format erstellt."},
+                {"role": "user", "content": final_prompt}
+            ]
+        )
+        ai_text = response.choices[0].message.content
+        
+        conn.execute('UPDATE weine SET ai_beschreibung = ?, aktualisiert = CURRENT_TIMESTAMP WHERE id = ?', (ai_text, wein_id))
+        conn.commit()
+        flash('AI Weinbeschreibung erfolgreich generiert und gespeichert!', 'success')
+    except Exception as e:
+        flash(f'Fehler bei der Generierung der Weinbeschreibung mit OpenAI: {e}', 'danger')
+    
+    conn.close()
+    return redirect(url_for('wein_detail', wein_id=wein_id))
 
 @app.route('/suche')
 def suche():

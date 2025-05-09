@@ -30,12 +30,21 @@
     ```bash
     pip install -r requirements.txt 
     ```
-    If not, install Flask manually:
+    If not, install Flask and other dependencies manually:
     ```bash
-    pip install Flask Werkzeug
+    pip install Flask Werkzeug openai
     ```
 
-4.  **Initialize the database:**
+4.  **Set up OpenAI API Key:**
+    This application uses OpenAI's API for generating wine descriptions. You need to have an OpenAI API key.
+    Set it as an environment variable:
+    ```bash
+    export OPENAI_API_KEY='your_openai_api_key_here'
+    ```
+    On Windows, use `set OPENAI_API_KEY=your_openai_api_key_here` in Command Prompt or `$env:OPENAI_API_KEY='your_openai_api_key_here'` in PowerShell.
+    If the API key is not set, the AI features will be disabled.
+
+5.  **Initialize the database:**
     This will create the `weinkeller.db` SQLite database file and populate it with the schema and any initial sample data.
     ```bash
     python init_db.py
