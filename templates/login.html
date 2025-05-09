@@ -22,7 +22,10 @@
 <body>
     <div class="card login-card shadow">
         <div class="card-body p-4">
-            <h3 class="card-title text-center mb-4">Mein Weinkeller - Login</h3>
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mein Weinkeller Logo" style="max-height: 80px;">
+            </div>
+            <h3 class="card-title text-center mb-4">Login</h3>
             
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
