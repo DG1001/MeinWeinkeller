@@ -58,29 +58,6 @@
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                Lagerung
-            </div>
-            <div class="card-body">
-                <p><strong>Lagerposition:</strong><br>{{ wein.lagerposition or 'Keine Position angegeben' }}</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                Notizen
-            </div>
-            <div class="card-body">
-                {% if wein.notizen %}
-                <p>{{ wein.notizen }}</p>
-                {% else %}
-                <p class="text-muted">Keine Notizen vorhanden</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
     <div class="col-md-4">
         <div class="card mb-4">

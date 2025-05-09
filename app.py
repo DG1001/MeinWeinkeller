@@ -1,9 +1,17 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ihre_geheime_schluesselzeichenfolge'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 def get_db_connection():
     conn = sqlite3.connect('weinkeller.db')
@@ -45,6 +53,22 @@ def wein_neu():
         preis = request.form.get('preis', 0)
         notizen = request.form.get('notizen', '')
         bestand = request.form.get('bestand', 1)
+
+        bild_pfade_list = []
+        uploaded_files = request.files.getlist("bilder")
+
+        # Create upload folder if it doesn't exist
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+        for file in uploaded_files:
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                bild_pfade_list.append(filename)
+            elif file and file.filename != '' and not allowed_file(file.filename):
+                flash(f'Ungültiger Dateityp für Datei: {file.filename}. Erlaubt sind: {", ".join(app.config["ALLOWED_EXTENSIONS"])}', 'warning')
+        
+        bild_pfade_str = ",".join(bild_pfade_list)
         
         if not name or not jahrgang or not weingut or not rebsorte:
             flash('Name, Jahrgang, Weingut und Rebsorte sind erforderlich!', 'danger')
@@ -53,10 +77,10 @@ def wein_neu():
             conn.execute("""
                 INSERT INTO weine 
                 (name, jahrgang, weingut, rebsorte, region, lagerposition, 
-                trinktemperatur, kaufdatum, preis, notizen, bestand) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                trinktemperatur, kaufdatum, preis, notizen, bestand, bild_pfade) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (name, jahrgang, weingut, rebsorte, region, lagerposition, 
-                  trinktemperatur, kaufdatum, preis, notizen, bestand))
+                  trinktemperatur, kaufdatum, preis, notizen, bestand, bild_pfade_str))
             conn.commit()
             conn.close()
             flash('Wein erfolgreich hinzugefügt!', 'success')

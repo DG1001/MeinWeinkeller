@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="mb-4">{{ titel }}</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4">
@@ -72,6 +72,14 @@
                     <div class="mb-3">
                         <label for="notizen" class="form-label">Notizen</label>
                         <textarea class="form-control" id="notizen" name="notizen" rows="4">{{ wein.notizen }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bilder" class="form-label">Bilder</label>
+                        <input type="file" class="form-control" id="bilder" name="bilder" multiple accept="image/*" capture>
+                        <small class="form-text text-muted">
+                            Sie können ein oder mehrere Bilder hochladen. Auf Mobilgeräten können Sie direkt die Kamera verwenden.
+                        </small>
                     </div>
                 </div>
             </div>
