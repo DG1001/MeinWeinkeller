@@ -111,26 +111,32 @@ def wein_bearbeiten(wein_id):
         notizen = request.form.get('notizen', '')
         bestand = request.form.get('bestand', 1)
 
-        bild_pfade_list = []
-        uploaded_files = request.files.getlist("bilder")
-        
-        # Get current image paths if no new files are uploaded, or to manage them
-        current_bild_pfade_str = wein['bild_pfade'] if wein['bild_pfade'] else ""
+        # Start with existing image paths
+        current_bild_pfade_list = []
+        if wein['bild_pfade']:
+            current_bild_pfade_list = [p for p in wein['bild_pfade'].split(',') if p] # Filter out empty strings from split
 
-        if uploaded_files and any(f.filename for f in uploaded_files): # Check if any file has a filename
-            # New files are uploaded, process them
+        uploaded_files = request.files.getlist("bilder")
+        newly_uploaded_filenames = []
+
+        if uploaded_files and any(f.filename for f in uploaded_files): # Check if any new file has a filename
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Ensure upload folder exists
             for file in uploaded_files:
                 if file and file.filename != '' and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    bild_pfade_list.append(filename)
+                    if filename not in newly_uploaded_filenames: # Add to new list only if not already processed in this batch
+                        newly_uploaded_filenames.append(filename)
                 elif file and file.filename != '' and not allowed_file(file.filename):
                     flash(f'Ungültiger Dateityp für Datei: {file.filename}. Erlaubt sind: {", ".join(app.config["ALLOWED_EXTENSIONS"])}', 'warning')
-            bild_pfade_str = ",".join(bild_pfade_list)
-        else:
-            # No new files uploaded, keep existing image paths
-            bild_pfade_str = current_bild_pfade_str
+        
+        # Combine existing and newly uploaded, ensuring new ones are only added if not already present in the combined list
+        final_bild_pfade_list = list(current_bild_pfade_list) # Make a copy
+        for fn in newly_uploaded_filenames:
+            if fn not in final_bild_pfade_list: # Add new file if it's not in the current list of all images
+                 final_bild_pfade_list.append(fn)
+        
+        bild_pfade_str = ",".join(final_bild_pfade_list)
         
         if not name or not jahrgang or not weingut or not rebsorte:
             flash('Name, Jahrgang, Weingut und Rebsorte sind erforderlich!', 'danger')
