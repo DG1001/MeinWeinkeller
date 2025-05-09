@@ -86,6 +86,27 @@ def wein_bearbeiten(wein_id):
         preis = request.form.get('preis', 0)
         notizen = request.form.get('notizen', '')
         bestand = request.form.get('bestand', 1)
+
+        bild_pfade_list = []
+        uploaded_files = request.files.getlist("bilder")
+        
+        # Get current image paths if no new files are uploaded, or to manage them
+        current_bild_pfade_str = wein['bild_pfade'] if wein['bild_pfade'] else ""
+
+        if uploaded_files and any(f.filename for f in uploaded_files): # Check if any file has a filename
+            # New files are uploaded, process them
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Ensure upload folder exists
+            for file in uploaded_files:
+                if file and file.filename != '' and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    bild_pfade_list.append(filename)
+                elif file and file.filename != '' and not allowed_file(file.filename):
+                    flash(f'Ungültiger Dateityp für Datei: {file.filename}. Erlaubt sind: {", ".join(app.config["ALLOWED_EXTENSIONS"])}', 'warning')
+            bild_pfade_str = ",".join(bild_pfade_list)
+        else:
+            # No new files uploaded, keep existing image paths
+            bild_pfade_str = current_bild_pfade_str
         
         if not name or not jahrgang or not weingut or not rebsorte:
             flash('Name, Jahrgang, Weingut und Rebsorte sind erforderlich!', 'danger')
@@ -95,11 +116,11 @@ def wein_bearbeiten(wein_id):
                 UPDATE weine SET 
                 name = ?, jahrgang = ?, weingut = ?, rebsorte = ?, 
                 region = ?, lagerposition = ?, trinktemperatur = ?, 
-                kaufdatum = ?, preis = ?, notizen = ?, bestand = ?,
+                kaufdatum = ?, preis = ?, notizen = ?, bestand = ?, bild_pfade = ?,
                 aktualisiert = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (name, jahrgang, weingut, rebsorte, region, lagerposition, 
-                  trinktemperatur, kaufdatum, preis, notizen, bestand, wein_id))
+                  trinktemperatur, kaufdatum, preis, notizen, bestand, bild_pfade_str, wein_id))
             conn.commit()
             conn.close()
             flash('Wein erfolgreich aktualisiert!', 'success')

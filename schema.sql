@@ -14,6 +14,7 @@ CREATE TABLE weine (
     bewertung INTEGER,
     notizen TEXT,
     bestand INTEGER DEFAULT 1,
+    bild_pfade TEXT, -- Comma-separated list of image filenames
     erstellt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     aktualisiert TIMESTAMP
 );
