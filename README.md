@@ -50,7 +50,7 @@
     python init_db.py
     ```
 
-5.  **Create the upload directory:**
+6.  **Create the upload directory:**
     The application saves uploaded images to `static/uploads/`.
     ```bash
     mkdir -p static/uploads
