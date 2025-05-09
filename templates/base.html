@@ -18,6 +18,29 @@
             background-color: #722F37;
             color: white;
         }
+        body {
+            position: relative; /* Stellt sicher, dass z-index des Pseudo-Elements korrekt funktioniert */
+            background-color: #ffffff; /* Heller Hintergrund, falls Bild nicht lädt oder durchscheint */
+        }
+        body::before {
+            content: "";
+            position: fixed; /* Bleibt beim Scrollen fixiert */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Hinter allen anderen Inhalten */
+            
+            /* BITTE ERSETZEN: URL zu Ihrem gewünschten Hintergrundbild */
+            background-image: url('https://www.example.com/placeholder-weinberg.jpg'); 
+            
+            background-size: cover; /* Bild füllt den gesamten Bereich, kann beschnitten werden */
+            background-position: center center; /* Bild zentrieren */
+            background-repeat: no-repeat; /* Bild nicht wiederholen */
+            
+            /* Passen Sie diesen Wert (0.0 bis 1.0) an, um das Bild heller oder dunkler erscheinen zu lassen */
+            opacity: 0.1; 
+        }
     </style>
 </head>
 <body>
