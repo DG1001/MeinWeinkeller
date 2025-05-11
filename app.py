@@ -6,12 +6,13 @@ import base64
 from werkzeug.utils import secure_filename
 import openai # Import the OpenAI library
 import markdown2 # Import markdown2
+import secrets # For generating secure tokens
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 if not app.config['SECRET_KEY']:
-    print("WARNUNG: SECRET_KEY nicht über Umgebungsvariable gesetzt. Verwende unsicheren Default-Key für Entwicklung.")
-    app.config['SECRET_KEY'] = 'dev_secret_key_bitte_in_production_aendern' # Default für Entwicklung
+    print("WARNUNG: SECRET_KEY nicht über Umgebungsvariable gesetzt. Verwende generierten Wert.")
+    app.config['SECRET_KEY'] = app.secret_key = secrets.token_hex(16) 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
